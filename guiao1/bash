@@ -1,0 +1,3 @@
+#!/usr/bin/bash 
+
+for $i {i..1000}
