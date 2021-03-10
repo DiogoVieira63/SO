@@ -16,31 +16,35 @@ typedef struct pessoa {
 
 int add(Pessoa person, int fd) {
     off_t registo = lseek (fd,0,SEEK_END)/sizeof (struct pessoa);
-    write(fd, &person, sizeof(struct pessoa));
-    printf("Foi inserido no registo: %zu, a idade é %d\n", registo, person.idade);
+    if (registo && write(fd, &person, sizeof(struct pessoa)) > 0) return 0;
+    else return 1;
+    //printf("Foi inserido no registo: %zu, a idade é %d\n", registo, person.idade);
 }
 
 int read_registo(int fd, int registo) {
     Pessoa person;
-    int i = 0;
     lseek (fd,registo * sizeof(struct pessoa),SEEK_CUR);
-    read (fd,&person,sizeof (struct pessoa));
-    printf("Registo nr %d: Name ->  %s | Age -> %d\n", registo,person.nome,person.idade);
+    if (read (fd,&person,sizeof (struct pessoa)) > 0) printf("Registo nr %d: Name ->  %s | Age -> %d\n", registo,person.nome,person.idade);
+    else return 1;
+    return 0;
 }
 
 int change_by_registo(int fd, int registo, int idade) {
     Pessoa person;
-    int i = 0;
     off_t max_registo = lseek (fd,0,SEEK_END)/sizeof (struct pessoa);
-    printf ("%zu vs %d\n",max_registo,registo);
+    //printf ("%zu vs %d\n",max_registo,registo);
     lseek (fd,0,SEEK_SET);
-    if (registo >= max_registo) return 0; 
+    if (registo >= max_registo) {
+        printf ("Registo %d não existe\n",registo);
+        return 1; 
+    }
     lseek(fd, registo * sizeof(struct pessoa), SEEK_CUR);  //go to position
-    read(fd, &person, sizeof(struct pessoa));              //read the person to change
-    lseek(fd, -sizeof(struct pessoa), SEEK_CUR);
-    person.idade = idade;
-    write(fd, &person, sizeof(struct pessoa));
-    return 1;
+    if (read(fd, &person, sizeof(struct pessoa)) > 0) {              //read the person to change
+        lseek(fd, -sizeof(struct pessoa), SEEK_CUR);
+        person.idade = idade;
+        if (write(fd,&person,sizeof(struct pessoa)) < 0)return 1;
+    }
+    return 0;
 }
 
 
@@ -52,7 +56,7 @@ int change_by_name (int fd, char *nome, int idade){
         if (!strcmp (person.nome,nome)){
             person.idade = idade;
             lseek (fd, - sizeof(struct pessoa),SEEK_CUR);
-            write(fd,&person,sizeof(struct pessoa));
+            if (write(fd,&person,sizeof(struct pessoa)) < 0)return 0;
             found = 1;
         }
     }
@@ -63,9 +67,9 @@ int read_all (int fd){
     off_t registo = lseek (fd,0,SEEK_END)/sizeof (struct pessoa);
     for (off_t i = 0; i < registo; i++){
         lseek (fd,0,SEEK_SET);
-        read_registo (fd,i);
-        
+        if (read_registo (fd,i) == 1) return 1;     
     }
+    return 0;
 }
 
 
@@ -82,7 +86,7 @@ int main(int argc, char **argv) {
         return 1;
     }
     Pessoa person;
-    int number = atoi (argv[2]), result;
+    int number = atoi (argv[2]), result = 0;
     switch (argv[1][1])
     {
     case 'i': 
@@ -105,4 +109,5 @@ int main(int argc, char **argv) {
         break;
     }
    close (fd);
+   return result;
 }

@@ -3,7 +3,7 @@
 
 
 ssize_t readln(int fd, char *line, size_t size){
-    int i = 0;
+    size_t i = 0;
     if (read(fd,line+i,size) <= 0) return 0;
     for (i = 0; i < size;i++)
         if (line[i] == '\n')break;
