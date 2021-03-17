@@ -75,21 +75,42 @@ int main (){
 
 /*
 int main (){
-    int status;
+    //printf ("first is %d\n",getpid());
+    pid_t pid;
     for (int i = 0; i < 10; i++){
-        if (fork()){//father
-            wait (&status); //wait for child 
-            printf ("%d -- CHILD %d AND FATHER %d \n",i,getpid (),getppid());
-            _exit(0); //end current process
+        if (pid = fork()){
+            break;
         }
     }
+    int status;
+    if (pid != 0){
+        //printf ("Process %d is waiting\n",getpid());
+        wait (&status);
+        //printf ("Processo PAI %d, Processo filho %d\n",getpid(),pid);
+        }
 }
 */
 
-//EXERCICIO 6/7
+//EXERCICIO 6
 
 /*
-int find_number (int L, int C, int matriz[L][C],int number){
+int main(int argc, char const *argv[]) {
+    int status;
+    for(int i = 1; i <= 10; i++) {
+        pid_t pid = getpid();
+        pid_t ppid = getppid();
+        printf("Process %d\nPID = %d\nParentPID = %d\n\n",i,pid,ppid);
+        if(fork()) {
+            int terminated_pid = wait(&status);
+	    printf("Process %d exited, exit code %d.\n", terminated_pid, WEXITSTATUS(status));
+            _exit(i);
+        }
+    }
+    return 0;
+}
+
+*/
+int ex_6 (int L, int C, int matriz[L][C],int number){
     int found = 0;
     int status;
     for (int i = 0; i < L && !found;i++){
@@ -99,28 +120,63 @@ int find_number (int L, int C, int matriz[L][C],int number){
             _exit (0);
         }
     }
-    for (int i = 0; i < L;i++){
-        waitpid (getpid()+1+i,&status,0);
+    for (int i = 0; i < L && !found;i++){
+        wait (&status);
         if (WEXITSTATUS(status) == 1) {
-            //found = 1; ex6
-            printf ("linha %d\n",i);
+            found = 1;
         }
     }
     return found;
 }
 
+// EXERCICIO 7
+
+int ex_7 (int L, int C,int matriz [L][C],int number){
+    int status;
+    pid_t array[L], pid;
+    for (int i = 0; i < L; i++){
+        if (pid = (!fork ())){
+            for (int u = 0; u < C;u++)
+                if (matriz[i][u] == number) _exit (1);
+            _exit(0);
+        }
+        else array[i] = pid;
+    }
+    for (int i = 0; i < L;i++){
+        waitpid(array[i],&status,0);
+        if (WEXITSTATUS(status) == 1){
+            printf("Linha %d\n",i);
+        }
+    }
+}
+
+int ex_7v2 (int L, int C,int matriz [L][C],int number){
+    int status,result,t = 0;
+    pid_t array[L],pid;
+    for (int i =0; i < L;i++){
+        if (pid = fork ()){
+            waitpid (pid,&status,0);
+            if ((result = WEXITSTATUS(status)) != L) printf ("Linha %d\n",result);
+            for (int u = 0; u < C;u++)
+                if (number == matriz [i][u]) _exit (i);
+            _exit (L);
+        }
+    }
+}
+
 void gera_matriz (int L, int C, int matriz [L][C]);
 
 int main (){
+    int L = 10, C = 10;
     srand(time(NULL));
-    int matriz [10][10];
-    gera_matriz (10,10, matriz);
-    int number = rand() % (10);
+    int matriz [L][C];
+    gera_matriz (L,C, matriz);
+    int number = rand() % (C);
     printf("The number is %d\n",number);
-    find_number (10,10,matriz, number);
+    ex_7v2 (L,C,matriz,number);
 }
 
-*/
+
 void gera_matriz (int L, int C, int matriz [L][C]){
     for (int i = 0; i < L; i++){
         for (int u = 0; u < C; u++){
@@ -133,11 +189,11 @@ void gera_matriz (int L, int C, int matriz [L][C]){
 
 //ADICIONAL
 
-
+/*
 int main (){
     srand(time(NULL));
     int fd = open ("example",O_RDWR);
-    int L = 10, C = 10;
+    int L = 10, C = 100000;
     int matriz [L][C];
     gera_matriz (L,C,matriz);
     int number = rand() % C;
@@ -147,28 +203,23 @@ int main (){
     }
     int new_matriz [L][C];
     lseek (fd,0,SEEK_SET);
+    pid_t array_pid[L];
+    pid_t pid; 
     for (int i = 0; i < L;i++){
-        if (!fork ()){
+        if (!(pid = fork ())){
             if (read (fd,&new_matriz[i],sizeof (int) * C) <= 0) return 1;
             for (int u = 0;u < C;u++)
                 if (new_matriz[i][u] == number){
-                    printf ("%d\n",i);
                     _exit (i);
                 }
-            _exit (0);
+            _exit (-1);
         }
+        else array_pid[i] = pid;
     }
-    //for (int i = 0; i < L; i++){
-    //    for (int u = 0; u < C; u++)printf ("%d ",new_matriz[i][u]);
-    //    putchar ('\n');
-    //}
-        
-    
     int status, count = 0;
     for (int i = 0; i < L;i++){
-        waitpid(getpid () +1+i,&status,0); //espera pelo processo de forma crescente
-        //wait (&status);
-        if (WEXITSTATUS (status) != 0){
+        waitpid(array_pid[i],&status,0);
+        if (WEXITSTATUS (status) != -1){
             printf ("Linha %d\n",WEXITSTATUS(status));
             count++;
         }
@@ -176,4 +227,4 @@ int main (){
     printf ("foi encontrado em %d linhas\n", count);
     close(fd);
 }
-
+*/
