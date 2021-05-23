@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+
 // EXERCICIO 1
 
 /*
@@ -78,19 +79,19 @@ int main (){
     //printf ("first is %d\n",getpid());
     pid_t pid;
     for (int i = 0; i < 10; i++){
-        if (pid = fork()){
+        if ((pid = fork())){
             break;
         }
     }
     int status;
     if (pid != 0){
-        //printf ("Process %d is waiting\n",getpid());
+        printf ("Process %d is waiting\n",getpid());
         wait (&status);
-        //printf ("Processo PAI %d, Processo filho %d\n",getpid(),pid);
+        printf ("Processo PAI %d, Processo filho %d\n",getpid(),pid);
         }
 }
-*/
 
+*/
 //EXERCICIO 6
 
 /*
@@ -110,6 +111,7 @@ int main(int argc, char const *argv[]) {
 }
 
 */
+
 int ex_6 (int L, int C, int matriz[L][C],int number){
     int found = 0;
     int status;
@@ -135,7 +137,7 @@ int ex_7 (int L, int C,int matriz [L][C],int number){
     int status;
     pid_t array[L], pid;
     for (int i = 0; i < L; i++){
-        if (pid = (!fork ())){
+        if ((pid = (!fork ()))){
             for (int u = 0; u < C;u++)
                 if (matriz[i][u] == number) _exit (1);
             _exit(0);
@@ -148,21 +150,24 @@ int ex_7 (int L, int C,int matriz [L][C],int number){
             printf("Linha %d\n",i);
         }
     }
+    return 0;
 }
 
-int ex_7v2 (int L, int C,int matriz [L][C],int number){
-    int status,result,t = 0;
-    pid_t array[L],pid;
-    for (int i =0; i < L;i++){
-        if (pid = fork ()){
-            waitpid (pid,&status,0);
-            if ((result = WEXITSTATUS(status)) != L) printf ("Linha %d\n",result);
-            for (int u = 0; u < C;u++)
-                if (number == matriz [i][u]) _exit (i);
-            _exit (L);
-        }
-    }
-}
+//int ex_7v2 (int L, int C,int matriz [L][C],int number){
+//    int status,result;
+//    pid_t pid;
+//    for (int i =0; i < L;i++){
+//        if ((pid = fork ())){
+//            waitpid (pid,&status,0);
+//            if ((result = WEXITSTATUS(status)) != L) printf ("Linha %d\n",result);
+//            for (int u = 0; u < C;u++)
+//                if (number == matriz [i][u]) _exit (i);
+//            _exit (L);
+//        }
+//    }
+//    return 0;
+//}
+
 
 void gera_matriz (int L, int C, int matriz [L][C]);
 
